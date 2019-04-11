@@ -1,0 +1,13 @@
+<h2>Show Track</h2>
+
+<ul>
+
+  <li>
+    <strong>Name:</strong>
+    <%= @track.name %>
+  </li>
+
+</ul>
+
+<span><%= link "Edit", to: track_path(@conn, :edit, @track) %></span>
+<span><%= link "Back", to: track_path(@conn, :index) %></span>

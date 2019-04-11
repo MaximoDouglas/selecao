@@ -1,0 +1,26 @@
+<h2>Listing Tracks</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for track <- @tracks do %>
+    <tr>
+      <td><%= track.name %></td>
+
+      <td class="text-right">
+        <span><%= link "Show", to: track_path(@conn, :show, track), class: "btn btn-default btn-xs" %></span>
+        <span><%= link "Edit", to: track_path(@conn, :edit, track), class: "btn btn-default btn-xs" %></span>
+        <span><%= link "Delete", to: track_path(@conn, :delete, track), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %></span>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<span><%= link "New Track", to: track_path(@conn, :new) %></span>

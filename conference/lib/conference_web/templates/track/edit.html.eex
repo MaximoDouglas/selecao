@@ -1,0 +1,5 @@
+<h2>Edit Track</h2>
+
+<%= render "form.html", Map.put(assigns, :action, track_path(@conn, :update, @track)) %>
+
+<span><%= link "Back", to: track_path(@conn, :index) %></span>
