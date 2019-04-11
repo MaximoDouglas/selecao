@@ -4,9 +4,6 @@ defmodule Conference.Management do
   """
 
   import Ecto.Query, warn: false
-  alias Conference.Repo
-
-  alias Conference.Management.Track
 
   @doc """
   Returns the list of tracks on the file.
@@ -21,10 +18,11 @@ defmodule Conference.Management do
     file = File.read!("/home/douglas/dev/git/selecao/proposals.txt")
     rows = String.split(file, "\n")
 
-    list_t = []
-    counter = 0
+    list = []
 
-    for row <- rows do
-      list_t ++ %Track{id: counter, name: row}
+    for speech <- rows do
+      list ++ speech
     end
   end
+
+end

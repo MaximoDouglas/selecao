@@ -4,7 +4,7 @@ defmodule ConferenceWeb.PageController do
   alias Conference.Management
 
   def index(conn, _params) do
-    tracks = Management.get_rows()
-    render(conn, "index.html", tracks: tracks)
+    speeches = Management.get_rows()
+    render(conn, "index.html", speeches: speeches)
   end
 end

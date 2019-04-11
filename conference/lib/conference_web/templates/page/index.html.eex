@@ -7,9 +7,9 @@
     </tr>
   </thead>
   <tbody>
-<%= for track <- @tracks do %>
+<%= for speech <- @speeches do %>
     <tr>
-      <td><%= track.name %></td>
+      <td><%= speech %></td>
     </tr>
 <% end %>
   </tbody>
