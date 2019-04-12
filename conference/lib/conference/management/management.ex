@@ -16,12 +16,17 @@ defmodule Conference.Management do
   """
   def get_rows do
     file = File.read!("/home/douglas/dev/git/selecao/proposals.txt")
-    rows = String.split(file, "\n")
+    rows =  String.split(file, "\n")
+    
+    for row <- rows do
+      words = String.split(row, " ")
 
-    list = []
-
-    for speech <- rows do
-      list ++ speech
+      if (List.last(words) == "lightning") do
+        words = List.delete_at(words, length(words) - 1)
+        words ++ "5min"
+      else
+        words
+      end
     end
   end
 
