@@ -6,28 +6,33 @@ defmodule Conference.Management do
   import Ecto.Query, warn: false
 
   @doc """
-  Returns the list of tracks on the file.
+  Returns the list of speeches on the file.
 
   ## Examples
 
-      iex> list_tracks()
-      [%Track{}, ...]
+      iex> get_rows()
+      [%{title: speech_name, duration: speech_duration}, ...]
 
   """
   def get_rows do
     file = File.read!("/home/douglas/dev/git/selecao/proposals.txt")
     rows =  String.split(file, "\n")
     
-    for row <- rows do
-      words = String.split(row, " ")
+    speeches = []
+    speeches =  for row <- rows do
+                  words = String.split(row, " ")
+                  speech_duration = List.last(words)
+                  
+                  words = List.delete_at(words, length(words) - 1)
 
-      if (List.last(words) == "lightning") do
-        words = List.delete_at(words, length(words) - 1)
-        words ++ "5min"
-      else
-        words
-      end
-    end
+                  speech_words = ""
+                  speech_name = for word <- words do
+                                  speech_words <> " " <> word
+                                end
+                  
+                  speech = %{title: speech_name, duration: speech_duration}
+                  speeches ++ speech
+                end
   end
 
 end

@@ -3,13 +3,13 @@
     <tr>
       <th>Palestra:</th>
 
-      <th></th>
+      <th>Duração: </th>
     </tr>
   </thead>
   <tbody>
 <%= for speech <- @speeches do %>
     <tr>
-      <td><%= speech %></td>
+      <td><%= speech.title %></td><td><%= speech.duration %></td>
     </tr>
 <% end %>
   </tbody>
