@@ -19,20 +19,20 @@ defmodule Conference.Management do
     rows =  String.split(file, "\n")
     
     speeches = []
-    speeches =  for row <- rows do
-                  words = String.split(row, " ")
-                  speech_duration = List.last(words)
-                  
-                  words = List.delete_at(words, length(words) - 1)
+    for row <- rows do
+      words = String.split(row, " ")
+      speech_duration = List.last(words)
+      
+      words = List.delete_at(words, length(words) - 1)
 
-                  speech_words = ""
-                  speech_name = for word <- words do
-                                  speech_words <> " " <> word
-                                end
-                  
-                  speech = %{title: speech_name, duration: speech_duration}
-                  speeches ++ speech
-                end
+      speech_words = ""
+      speech_name = for word <- words do
+                      speech_words <> " " <> word
+                    end
+      
+      speech = %{title: speech_name, duration: speech_duration}
+      speeches ++ speech
+    end
   end
 
 end
