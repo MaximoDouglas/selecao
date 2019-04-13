@@ -10,11 +10,11 @@ defmodule Conference.Management do
 
   ## Examples
 
-      iex> get_rows()
+      iex> get_speeches()
       [%{title: speech_name, duration: speech_duration}, ...]
 
   """
-  def get_rows do
+  def get_speeches do
     file = File.read!("/home/douglas/dev/git/selecao/proposals.txt")
     rows =  String.split(file, "\n")
     
