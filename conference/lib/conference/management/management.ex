@@ -43,7 +43,7 @@ defmodule Conference.Management do
   """
   def get_session(period, speeches, used_indexes) do
     indexes = []
-    indexes = if (period == 'morning') do
+    indexes = if (period == 0) do
                 indexes ++ [0, 1, 2]
               else
                 indexes ++ [3, 4, 5]
