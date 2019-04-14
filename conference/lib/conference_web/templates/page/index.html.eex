@@ -1,16 +1,17 @@
+<%= for track <- @tracks do %>
 <table class="table">
   <thead>
     <tr>
-      <th>Palestra:</th>
-
+      <th><%= track.title %>:</th>
       <th>Duração: </th>
     </tr>
   </thead>
   <tbody>
-<%= for track <- @tracks do %>
+  <%= for i <- 0..(track.size - 1) do %>
     <tr>
-      <td><%= Enum.at(track.events, 0).title %></td><td><%= Enum.at(track.events, 0).duration %></td>
+      <td><%= Enum.at(track.events, i).title %></td><td><%= Enum.at(track.events, i).duration %></td>
     </tr>
-<% end %>
+  <%= end %>
   </tbody>
 </table>
+<% end %>

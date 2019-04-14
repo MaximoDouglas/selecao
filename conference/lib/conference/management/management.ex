@@ -34,7 +34,7 @@ defmodule Conference.Management do
 
   @doc """
   Returns the indexes for the selected speeches in the speeches list to be a part of the session,
-  given a period of the day ('mornig' or 'afternoon') and a list of speeches
+  given a period of the day ('morning' or 'afternoon') and a list of speeches
 
   ## Examples
 
@@ -42,12 +42,17 @@ defmodule Conference.Management do
       [1, 2, 0, ...]
   """
   def get_session(period, speeches, used_indexes) do
-    indexes = [0, 1, 2]
+    indexes = []
+    indexes = if (period == 'morning') do
+                indexes ++ [0, 1, 2]
+              else
+                indexes ++ [3, 4, 5]
+              end
   end
 
   @doc """
   Returns the indexes for the selected speeches in the speeches list to be a part of the session,
-  given a period of the day ('mornig' or 'afternoon') and a list of speeches
+  given a period of the day ('morning' or 'afternoon') and a list of speeches
 
   ## Examples
 
@@ -57,20 +62,15 @@ defmodule Conference.Management do
   def mount_track(title, session_morning, session_afternoon) do
     
     events = []
-    events =  for sm <- session_morning do
-                events ++ sm
-              end
+    events = events ++ session_morning
 
-    events = events ++ %{title: "Almoço", duration: " "}
+    events = events ++ [%{title: "Almoço", duration: " "}]
 
-    events = []
-    events =  for sa <- session_afternoon do
-                events ++ sa
-              end
+    events = events ++ session_afternoon
 
-    events = events ++ %{title: "Evento de Networking", duration: " "}
-
-    track = %{title: title, events: events}
+    events = events ++ [%{title: "Evento de Networking", duration: " "}]
+    
+    track = %{title: title, events: events, size: length(session_morning ++ session_afternoon) + 2}
   end
 
   @doc """
@@ -86,8 +86,8 @@ defmodule Conference.Management do
     speeches = File.read!("/home/douglas/dev/git/selecao/proposals.txt")
     |> file_to_speeches()
 
-    period_1 = 'morning'
-    period_2 = 'afternoon'
+    period_1 = 0
+    period_2 = 1
 
     used_indexes = []
     
