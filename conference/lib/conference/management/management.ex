@@ -41,12 +41,46 @@ defmodule Conference.Management do
       iex> get_session()
       [1, 2, 0, ...]
   """
-  def get_session(period, speeches, used_indexes) do
+  def get_session_by_interval(begin_morning, end_morning, speeches, used_indexes) do
     indexes = []
+    
+    splited_time = String.split(begin_morning, ":")
+    hour = Enum.at(splited_time, 0)
+    minutes = Enum.at(splited_time, 1)
+
+    for speech <- speeches do
+      duration = String.to_integer(String.slice(speech.duration, 0..-2))
+    end
+    
     indexes = if (period == 0) do
                 indexes ++ [0, 1, 2]
               else
                 indexes ++ [3, 4, 5]
+              end
+  end
+
+  @doc """
+  Returns the indexes for the selected speeches in the speeches list to be a part of the session,
+  given a period of the day ('morning' or 'afternoon') and a list of speeches
+
+  ## Examples
+
+      iex> get_session()
+      [1, 2, 0, ...]
+  """
+  def get_session(period, speeches, used_indexes) do
+    indexes = []
+
+    begin_morning = "09:00"
+    end_morning = "12:00"
+
+    begin_afternoon = "13:00"
+    end_afternoon = "17:00"
+    
+    indexes = if (period == 0) do
+                indexes ++ get_session_by_interval(begin_morning, end_morning, speeches, used_indexes)
+              else
+                indexes ++ get_session_by_interval(begin_afternoon, end_afternoon, speeches, used_indexes)
               end
   end
 
