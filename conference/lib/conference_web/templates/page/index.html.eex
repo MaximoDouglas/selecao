@@ -7,9 +7,9 @@
     </tr>
   </thead>
   <tbody>
-<%= for speech <- @speeches do %>
+<%= for track <- @tracks do %>
     <tr>
-      <td><%= speech.title %></td><td><%= speech.duration %></td>
+      <td><%= Enum.at(track.events, 0).title %></td><td><%= Enum.at(track.events, 0).duration %></td>
     </tr>
 <% end %>
   </tbody>
