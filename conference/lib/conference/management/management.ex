@@ -29,9 +29,10 @@ defmodule Conference.Management do
 
       speech_words = ""
       speech_name = for word <- words do
+                      word = String.replace(word, ~r/\d/, "")
                       speech_words <> " " <> word
                     end
-      
+
       speech = %{title: speech_name, duration: speech_duration}
       speeches ++ speech
     end
