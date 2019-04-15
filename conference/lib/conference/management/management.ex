@@ -47,7 +47,6 @@ defmodule Conference.Management do
                               else
                                 5
                               end
-
       m = minutes + duration                        
       
       h = if (m >= 60) do
@@ -148,6 +147,35 @@ defmodule Conference.Management do
     track = %{title: title, events: events, size: length(session_morning ++ session_afternoon) + 2}
   end
 
+  def make_tracks(counter, speeches, used_indexes) when (length(used_indexes) == length(speeches)) do
+    []
+  end
+
+  def make_tracks(counter, speeches, used_indexes) do
+    track_names = ["Track A", "Track B", "Track C", "Track D"]
+
+    period_1 = 0
+    period_2 = 1
+
+    indexes_morning = get_session(period_1, speeches, used_indexes)
+    used_indexes = used_indexes ++ indexes_morning
+
+    session_morning = []
+    session_morning = for i <- indexes_morning do
+                        session_morning ++ Enum.at(speeches, i)
+                      end
+    indexes_afternoon = get_session(period_2, speeches, used_indexes)
+    used_indexes = used_indexes ++ indexes_afternoon
+    
+    session_afternoon = []
+    session_afternoon = for j <- indexes_afternoon do
+                          session_afternoon ++ Enum.at(speeches, j)
+                        end
+    
+    track = mount_track(Enum.at(track_names, counter), session_morning, session_afternoon)
+    [track] ++ make_tracks(counter + 1, speeches, used_indexes)
+  end
+
   @doc """
   Returns the list of tracks
 
@@ -160,38 +188,8 @@ defmodule Conference.Management do
   def get_tracks do
     file = File.read!("/home/douglas/dev/git/selecao/proposals.txt")
     speeches = file_to_speeches(file)
-
-    period_1 = 0
-    period_2 = 1
-
     used_indexes = []
-    
-    tracks = []
-    tracks =  for k <- 0..1 do
-                indexes_morning = get_session(period_1, speeches, used_indexes)
-                used_indexes = used_indexes ++ indexes_morning
-
-                session_morning = []
-                session_morning = for i <- indexes_morning do
-                                    session_morning ++ Enum.at(speeches, i)
-                                  end
-                
-                indexes_afternoon = get_session(period_2, speeches, used_indexes)
-                used_indexes = used_indexes ++ indexes_afternoon
-
-                session_afternoon = []
-                session_afternoon = for j <- indexes_afternoon do
-                                      session_afternoon ++ Enum.at(speeches, j)
-                                    end
-                
-                title = if (k == 0) do
-                          "Track A"
-                        else
-                          "Track B"
-                        end
-
-                tracks ++ mount_track(title, session_morning, session_afternoon)
-              end
+    tracks = make_tracks(0, speeches, used_indexes)
   end
 
 end
