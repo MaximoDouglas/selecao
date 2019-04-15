@@ -4,40 +4,61 @@ defmodule Conference.Management do
   """
 
   @doc """
-  Returns the list of speeches on the file.
+  Returns the list of speeches on the file, using its path as input.
 
-  ## Examples
-
-      iex> get_speeches()
-      [%{title: speech_name, duration: speech_duration}, ...]
-
+  ##  In: 
+        file: File path
+      Out:
+        List of speeches in the file
   """
   def file_to_speeches(file) do
-    rows =  String.split(file, "\n")
+    rows = file
+    |> String.split("\n")
     
     speeches = []
-    speeches = for row <- rows do
-                  words = String.split(row, " ")
-                  speech_duration = List.last(words)
-                  
-                  words = List.delete_at(words, length(words) - 1)
+    for row <- rows do
+      words = row
+      |> String.split(" ")
 
-                  speech_words = ""
-                  speech_name = for word <- words do
-                                  speech_words <> " " <> word
-                                end
-                  
-                  speech = %{title: speech_name, duration: speech_duration}
-                  speeches ++ speech
-                end
-    
-    speeches = Enum.drop(speeches, -1)
+      speech_duration = words
+      |> List.last()
+      
+      words = words
+      |> List.delete_at(length(words) - 1)
+
+      speech_words = ""
+      speech_name = for word <- words do
+                      speech_words <> " " <> word
+                    end
+      
+      speech = %{title: speech_name, duration: speech_duration}
+      speeches ++ speech
+    end
+    |> Enum.drop(-1)
   end
 
+  @doc """
+  Stop condition for the 'recursive' function that gets speeches still available
+  """
   def recursive(index, speeches, hour, minutes, end_hour, end_minutes, used_indexes) when (index == length(speeches)) do
     []
   end
 
+  @doc """
+  Recursive function that gets speeches still available
+
+  ##  In: 
+        index: integer to get a speech in the list os speeches
+        speeches: list of speeches
+        hour: incremented hour (it begins as 09 for morning sessions and 13 for afternoon sessions)
+        minutes: incremented minutes
+        end_hour: limit hour (12 for morning sessions and 17 for afternoon sessions)
+        end_minutes: limit minutes
+        used_indexes: indexes of the speeches that are already in use
+      Out:
+        [index]: which is a list containing just the index of the speech (in the list of 
+        speeches) if it is available and do not passes the limit hour when added to the session.
+  """
   def recursive(index, speeches, hour, minutes, end_hour, end_minutes, used_indexes) do
     if (!(Enum.member?(used_indexes, index))) do
       speech = Enum.at(speeches, index)
@@ -97,8 +118,7 @@ defmodule Conference.Management do
     end_hour = String.to_integer(Enum.at(splited_end_time, 0))
     end_minutes = String.to_integer(Enum.at(splited_end_time, 1))
 
-    indexes = []
-    indexes = recursive(0, speeches, hour, minutes, end_hour, end_minutes, used_indexes)
+    recursive(0, speeches, hour, minutes, end_hour, end_minutes, used_indexes)
   end
 
   @doc """
@@ -144,7 +164,7 @@ defmodule Conference.Management do
 
     events = events ++ [%{title: "Evento de Networking", duration: " "}]
     
-    track = %{title: title, events: events, size: length(session_morning ++ session_afternoon) + 2}
+    %{title: title, events: events, size: length(session_morning ++ session_afternoon) + 2}
   end
 
   def make_tracks(counter, speeches, used_indexes) when (length(used_indexes) == length(speeches)) do
@@ -182,14 +202,14 @@ defmodule Conference.Management do
   ## Examples
 
       iex> get_tracks()
-      [%{title: track_name, events: [{title: event_title, duration: event_duration}, ...]}, ...]
+      [%{title: track_name , events: [{title: event_title, duration: event_duration}, ...]}, ...]
 
   """
   def get_tracks do
     file = File.read!("/home/douglas/dev/git/selecao/proposals.txt")
     speeches = file_to_speeches(file)
     used_indexes = []
-    tracks = make_tracks(0, speeches, used_indexes)
+    make_tracks(0, speeches, used_indexes)
   end
 
 end
