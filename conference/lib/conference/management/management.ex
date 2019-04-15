@@ -16,22 +16,70 @@ defmodule Conference.Management do
     rows =  String.split(file, "\n")
     
     speeches = []
-    for row <- rows do
-      words = String.split(row, " ")
-      speech_duration = List.last(words)
-      
-      words = List.delete_at(words, length(words) - 1)
+    speeches = for row <- rows do
+                  words = String.split(row, " ")
+                  speech_duration = List.last(words)
+                  
+                  words = List.delete_at(words, length(words) - 1)
 
-      speech_words = ""
-      speech_name = for word <- words do
-                      speech_words <> " " <> word
-                    end
-      
-      speech = %{title: speech_name, duration: speech_duration}
-      speeches ++ speech
-    end
+                  speech_words = ""
+                  speech_name = for word <- words do
+                                  speech_words <> " " <> word
+                                end
+                  
+                  speech = %{title: speech_name, duration: speech_duration}
+                  speeches ++ speech
+                end
+    
+    speeches = Enum.drop(speeches, -1)
   end
 
+  def recursive(index, speeches, hour, minutes, end_hour, end_minutes, used_indexes) when (index == length(speeches)) do
+    []
+  end
+
+  def recursive(index, speeches, hour, minutes, end_hour, end_minutes, used_indexes) do
+    if (!(Enum.member?(used_indexes, index))) do
+      speech = Enum.at(speeches, index)
+
+      duration =  if(speech.duration != "lightning") do
+                                String.to_integer(String.slice(speech.duration, 0..-4))
+                              else
+                                5
+                              end
+
+      m = minutes + duration                        
+      
+      h = if (m >= 60) do
+            hour + 1
+          else
+            hour
+          end
+
+      m = if (m >= 60) do
+            m - 60
+          else
+            m
+          end
+      
+      if (h < end_hour) do
+        [index] ++ recursive(index + 1, speeches, h, m, end_hour, end_minutes, used_indexes)
+      else
+        if (h == end_hour) do
+          if (m == end_minutes) do
+            [index]
+          else
+            []
+          end
+        else
+          []
+        end
+      end
+    else
+      recursive(index + 1, speeches, hour, minutes, end_hour, end_minutes, used_indexes)
+    end
+  end
+  
   @doc """
   Returns the indexes for the selected speeches in the speeches list to be a part of the session,
   given a period of the day ('morning' or 'afternoon') and a list of speeches
@@ -41,22 +89,17 @@ defmodule Conference.Management do
       iex> get_session()
       [1, 2, 0, ...]
   """
-  def get_session_by_interval(begin_morning, end_morning, speeches, used_indexes) do
-    indexes = []
-    
-    splited_time = String.split(begin_morning, ":")
-    hour = Enum.at(splited_time, 0)
-    minutes = Enum.at(splited_time, 1)
+  def get_session_by_interval(begin_intv, end_intv, speeches, used_indexes) do
+    splited_time = String.split(begin_intv, ":")
+    hour = String.to_integer(Enum.at(splited_time, 0))
+    minutes = String.to_integer(Enum.at(splited_time, 1))
 
-    for speech <- speeches do
-      duration = String.to_integer(String.slice(speech.duration, 0..-2))
-    end
-    
-    indexes = if (period == 0) do
-                indexes ++ [0, 1, 2]
-              else
-                indexes ++ [3, 4, 5]
-              end
+    splited_end_time = String.split(end_intv, ":")
+    end_hour = String.to_integer(Enum.at(splited_end_time, 0))
+    end_minutes = String.to_integer(Enum.at(splited_end_time, 1))
+
+    indexes = []
+    indexes = recursive(0, speeches, hour, minutes, end_hour, end_minutes, used_indexes)
   end
 
   @doc """
@@ -69,19 +112,17 @@ defmodule Conference.Management do
       [1, 2, 0, ...]
   """
   def get_session(period, speeches, used_indexes) do
-    indexes = []
-
     begin_morning = "09:00"
     end_morning = "12:00"
 
     begin_afternoon = "13:00"
     end_afternoon = "17:00"
-    
-    indexes = if (period == 0) do
-                indexes ++ get_session_by_interval(begin_morning, end_morning, speeches, used_indexes)
-              else
-                indexes ++ get_session_by_interval(begin_afternoon, end_afternoon, speeches, used_indexes)
-              end
+
+    if (period == 0) do
+      get_session_by_interval(begin_morning, end_morning, speeches, used_indexes)
+    else
+      get_session_by_interval(begin_afternoon, end_afternoon, speeches, used_indexes)
+    end
   end
 
   @doc """
@@ -117,14 +158,15 @@ defmodule Conference.Management do
 
   """
   def get_tracks do
-    speeches = File.read!("/home/douglas/dev/git/selecao/proposals.txt")
-    |> file_to_speeches()
+    file = File.read!("/home/douglas/dev/git/selecao/proposals.txt")
+    speeches = file_to_speeches(file)
 
     period_1 = 0
     period_2 = 1
 
     used_indexes = []
     
+    tracks = []
     tracks =  for k <- 0..1 do
                 indexes_morning = get_session(period_1, speeches, used_indexes)
                 used_indexes = used_indexes ++ indexes_morning
@@ -148,7 +190,7 @@ defmodule Conference.Management do
                           "Track B"
                         end
 
-                mount_track(title, session_morning, session_afternoon)
+                tracks ++ mount_track(title, session_morning, session_afternoon)
               end
   end
 
