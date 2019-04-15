@@ -101,8 +101,8 @@ defmodule Conference.Management do
           [index] ++ recursive(index + 1, speeches, h, m, end_hour, end_minutes, used_indexes)
         else
           if (h == end_hour) do
-            if (m == end_minutes) do
-              [index]
+            if (m <= end_minutes) do
+              [index] ++ recursive(index + 1, speeches, h, m, end_hour, end_minutes, used_indexes)
             else
               []
             end
