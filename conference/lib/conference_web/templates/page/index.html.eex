@@ -11,7 +11,7 @@
     <tr>
       <td><%= Enum.at(track.events, i).begin %></td><td><%= Enum.at(track.events, i).title %></td><td><%= Enum.at(track.events, i).duration %></td>
     </tr>
-  <%= end %>
+  <% end %>
   </tbody>
 </table>
 <% end %>
