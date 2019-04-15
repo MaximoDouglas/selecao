@@ -5,7 +5,8 @@ defmodule Conference.Management do
 
   @doc """
   Returns the list of speeches on the file, using its path as input.
-
+  Speech struct = {title: <speech_name>, duration: <speech_duration>}
+  
   ##  In: 
         file: File path
       Out:
@@ -118,12 +119,15 @@ defmodule Conference.Management do
   
   @doc """
   Returns the indexes for the selected speeches in the speeches list to be a part of the session,
-  given a period of the day ('morning' or 'afternoon') and a list of speeches
+  given a interval of time, a list of speeches and a list of indexes of speeches.
 
-  ## Examples
-
-      iex> get_session()
-      [1, 2, 0, ...]
+  ##  In: 
+        begin_intv: Time in the format "hh:mm"
+        end_intv: Time in the format "hh:mm"
+        speeches: List of speeches
+        used_indexes: indexes of the speeches that are already in use
+      Out:
+        recursive: which uses recursivity to mount the session for the given interval of time
   """
   def get_session_by_interval(begin_intv, end_intv, speeches, used_indexes) do
     splited_time = String.split(begin_intv, ":")
@@ -139,12 +143,16 @@ defmodule Conference.Management do
 
   @doc """
   Returns the indexes for the selected speeches in the speeches list to be a part of the session,
-  given a period of the day ('morning' or 'afternoon') and a list of speeches
+  given a period of the day, a list of speeches and a list of indexes of speeches.
 
-  ## Examples
-
-      iex> get_session()
-      [1, 2, 0, ...]
+  ##  In: 
+        period:
+          0: morning session
+          1: afternoon session
+        speeches: List of speeches
+        used_indexes: indexes of the speeches that are already in use
+      Out:
+        List of indexes of selected speeches for the given session of the day
   """
   def get_session(period, speeches, used_indexes) do
     begin_morning = "09:00"
@@ -160,6 +168,19 @@ defmodule Conference.Management do
     end
   end
 
+  @doc """
+  Returns the list of 'events' (which is a struct like 'speech', but with 'begin' hour) of the speeches in the 
+  list of speeches, given the begin_hour.
+  
+  Event struct = {begin: <event_begin_hour>, title: <event_name>, duration: <event_duration>}
+
+  ##  In: 
+        index: index to point to a certain speech in the list of speeches
+        begin_hour: time that the current speech (Enum.at(speeches, index)) will begin
+        speeches: List of speeches of a session of a track
+      Out:
+        List of events of a session of a track
+  """
   def get_hours(index, begin_hour, speeches) do
     if (index < length(speeches)) do
       hour_list = String.split(begin_hour, ":")
@@ -193,33 +214,37 @@ defmodule Conference.Management do
     end
   end
 
-  def set_begin(begin_hour, speeches) do
-    get_hours(0, begin_hour, speeches)
-  end
-
   @doc """
-  Returns the indexes for the selected speeches in the speeches list to be a part of the session,
-  given a period of the day ('morning' or 'afternoon') and a list of speeches
+  Return a track with its sessions and for each session its speeches containing 'begin', 'title' and 'duration'
+  Track struct = {title: <track_name>, events: <events_list>, size: <events_length>}
 
-  ## Examples
-
-      iex> get_session()
-      [1, 2, 0, ...]
+  ##  In: 
+        title: index to point to a certain speech in the list of speeches
+        session_morning: time that the current speech (Enum.at(speeches, index)) will begin
+        session_afternoon: List of speeches of a session of a track
+      Out:
+        Track with events set
   """
   def mount_track(title, session_morning, session_afternoon) do
-    
-    events = []
-    events = events ++ set_begin("09:00", session_morning) 
-
+    events = get_hours(0, "09:00", session_morning) 
     events = events ++ [%{begin: "12:00", title: "Almoço", duration: " "}]
 
-    events = events ++ set_begin("13:00", session_afternoon)
-
+    events = events ++ get_hours(0, "13:00", session_afternoon)
     events = events ++ [%{begin: "17:00", title: "Evento de Networking", duration: " "}]
     
     %{title: title, events: events, size: length(session_morning ++ session_afternoon) + 2}
   end
 
+  @doc """
+  Make the list of tracks for the given list speeches
+
+  ##  In: 
+        counter: index to point to a track_name for the track 
+        speeches: List of speeches
+        used_indexes: indexes of the speeches that are already in use
+      Out:
+        Tracks for the given list speeches
+  """
   def make_tracks(counter, speeches, used_indexes) do
     if (length(used_indexes) < length(speeches)) do
       track_names = ["Track A", "Track B", "Track C", "Track D"]
@@ -234,6 +259,7 @@ defmodule Conference.Management do
       session_morning = for i <- indexes_morning do
                           session_morning ++ Enum.at(speeches, i)
                         end
+      
       indexes_afternoon = get_session(period_2, speeches, used_indexes)
       used_indexes = used_indexes ++ indexes_afternoon
       
@@ -250,16 +276,15 @@ defmodule Conference.Management do
   end
 
   @doc """
-  Returns the list of tracks
+  Return the list of tracks, using the list of speeches in a given file
 
-  ## Examples
-
-      iex> get_tracks()
-      [%{title: track_name , events: [{title: event_title, duration: event_duration}, ...]}, ...]
-
+  ##  In: 
+        file_path: path to the file which contains the speeches
+      Out:
+        Tracks for the given file
   """
-  def get_tracks do
-    file = File.read!("/home/douglas/dev/git/selecao/proposals.txt")
+  def get_tracks(file_path) do
+    file = File.read!(file_path)
     speeches = file_to_speeches(file)
     used_indexes = []
     make_tracks(0, speeches, used_indexes)
