@@ -2,14 +2,14 @@
 <table class="table">
   <thead>
     <tr>
-      <th><%= track.title %>:</th>
-      <th>Duração: </th>
+      <th><%= track.title %></th><th></th><th>Duração:</th>
+      
     </tr>
   </thead>
   <tbody>
   <%= for i <- 0..(track.size - 1) do %>
     <tr>
-      <td><%= Enum.at(track.events, i).title %></td><td><%= Enum.at(track.events, i).duration %></td>
+      <td><%= Enum.at(track.events, i).begin %></td><td><%= Enum.at(track.events, i).title %></td><td><%= Enum.at(track.events, i).duration %></td>
     </tr>
   <%= end %>
   </tbody>

@@ -64,10 +64,11 @@ defmodule Conference.Management do
       speech = Enum.at(speeches, index)
 
       duration =  if(speech.duration != "lightning") do
-                                String.to_integer(String.slice(speech.duration, 0..-4))
-                              else
-                                5
-                              end
+                    String.to_integer(String.slice(speech.duration, 0..-4))
+                  else
+                    5
+                  end
+
       m = minutes + duration                        
       
       h = if (m >= 60) do
@@ -144,6 +145,61 @@ defmodule Conference.Management do
     end
   end
 
+  def get_hours(index, begin_hour, speeches) when (index == length(speeches)) do
+    []
+  end
+
+  def get_hours(index, begin_hour, speeches) do
+    
+    hour_list = String.split(begin_hour, ":")
+    
+    hour = String.to_integer(Enum.at(hour_list, 0))
+    minutes = String.to_integer(Enum.at(hour_list, 1))
+    
+    s = Enum.at(speeches, index)
+    
+    duration =  if (s.duration != "lightning") do
+                  String.to_integer(String.slice(s.duration, 0..-4))
+                else
+                  5
+                end
+                
+    m = minutes + duration                        
+    
+    h = if (m >= 60) do
+          hour + 1
+        else
+          hour
+        end
+
+    m = if (m >= 60) do
+          m - 60
+        else
+          m
+        end
+
+    h = if (h < 10) do
+          "0" <> to_string(h)
+        else
+          to_string(h)
+        end
+
+    m = if (m < 10) do
+          "0" <> to_string(m)
+        else
+          to_string(m)
+        end
+    
+    time = h <> ":" <> m
+    
+    event = %{begin: begin_hour, title: s.title, duration: s.duration}
+    [event] ++ get_hours(index + 1, time, speeches)
+  end
+
+  def set_begin(begin_hour, speeches) do
+    get_hours(0, begin_hour, speeches)
+  end
+
   @doc """
   Returns the indexes for the selected speeches in the speeches list to be a part of the session,
   given a period of the day ('morning' or 'afternoon') and a list of speeches
@@ -156,13 +212,13 @@ defmodule Conference.Management do
   def mount_track(title, session_morning, session_afternoon) do
     
     events = []
-    events = events ++ session_morning
+    events = events ++ set_begin("09:00", session_morning) 
 
-    events = events ++ [%{title: "Almoço", duration: " "}]
+    events = events ++ [%{begin: "12:00", title: "Almoço", duration: " "}]
 
-    events = events ++ session_afternoon
+    events = events ++ set_begin("13:00", session_afternoon)
 
-    events = events ++ [%{title: "Evento de Networking", duration: " "}]
+    events = events ++ [%{begin: "17:00", title: "Evento de Networking", duration: " "}]
     
     %{title: title, events: events, size: length(session_morning ++ session_afternoon) + 2}
   end
