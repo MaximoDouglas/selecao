@@ -37,6 +37,29 @@ defmodule Conference.Management do
     |> Enum.drop(-1)
   end
 
+  def hour_and_minutes(speech, hour, minutes) do
+    duration =  if(speech.duration != "lightning") do
+                  String.to_integer(String.slice(speech.duration, 0..-4))
+                else
+                  5
+                end
+
+    m = minutes + duration                        
+      
+    h = if (m >= 60) do
+          hour + 1
+        else
+          hour
+        end
+
+    m = if (m >= 60) do
+          m - 60
+        else
+          m
+        end
+    [h] ++ [m]
+  end
+
   @doc """
   Stop condition for the 'recursive' function that gets speeches still available
   """
@@ -63,25 +86,8 @@ defmodule Conference.Management do
     if (!(Enum.member?(used_indexes, index))) do
       speech = Enum.at(speeches, index)
 
-      duration =  if(speech.duration != "lightning") do
-                    String.to_integer(String.slice(speech.duration, 0..-4))
-                  else
-                    5
-                  end
-
-      m = minutes + duration                        
-      
-      h = if (m >= 60) do
-            hour + 1
-          else
-            hour
-          end
-
-      m = if (m >= 60) do
-            m - 60
-          else
-            m
-          end
+      h = Enum.at(hour_and_minutes(speech, hour, minutes), 0)
+      m = Enum.at(hour_and_minutes(speech, hour, minutes), 1)
       
       if (h < end_hour) do
         [index] ++ recursive(index + 1, speeches, h, m, end_hour, end_minutes, used_indexes)
@@ -156,27 +162,10 @@ defmodule Conference.Management do
     hour = String.to_integer(Enum.at(hour_list, 0))
     minutes = String.to_integer(Enum.at(hour_list, 1))
     
-    s = Enum.at(speeches, index)
+    speech = Enum.at(speeches, index)
     
-    duration =  if (s.duration != "lightning") do
-                  String.to_integer(String.slice(s.duration, 0..-4))
-                else
-                  5
-                end
-                
-    m = minutes + duration                        
-    
-    h = if (m >= 60) do
-          hour + 1
-        else
-          hour
-        end
-
-    m = if (m >= 60) do
-          m - 60
-        else
-          m
-        end
+    h = Enum.at(hour_and_minutes(speech, hour, minutes), 0)
+    m = Enum.at(hour_and_minutes(speech, hour, minutes), 1)
 
     h = if (h < 10) do
           "0" <> to_string(h)
@@ -192,7 +181,7 @@ defmodule Conference.Management do
     
     time = h <> ":" <> m
     
-    event = %{begin: begin_hour, title: s.title, duration: s.duration}
+    event = %{begin: begin_hour, title: speech.title, duration: speech.duration}
     [event] ++ get_hours(index + 1, time, speeches)
   end
 
